@@ -1,0 +1,17 @@
+QuestaSim-64 vlog 2024.1 Compiler 2024.02 Feb  1 2024
+Start time: 14:32:32 on Oct 21,2026
+vlog -reportprogress 300 -mfcu -sv ../tb/axi_tb_top.sv -l compile.log 
+** Note: (vlog-2286) ../tb/axi_tb_top.sv(1): Using implicit +incdir+C:/questasim64_2024.1/uvm-1.1d/../verilog_src/uvm-1.1d/src from import uvm_pkg
+-- Compiling package axi_tb_top_sv_unit
+-- Importing package mtiUvm.uvm_pkg (uvm-1.1d Built-in)
+-- Importing package axi_pkg
+-- Compiling package axi_pkg
+** Warning: ../tb/transaction.sv(164): (vlog-2570) Zero-length range with constant bounds. Low-bound and high-bound may be reversed.
+** Warning: ../tb/transaction.sv(151): (vlog-2570) Zero-length range with constant bounds. Low-bound and high-bound may be reversed.
+-- Compiling interface axi_if
+-- Compiling module axi_tb_top_no_dut
+
+Top level modules:
+	axi_tb_top_no_dut
+End time: 14:32:33 on Oct 21,2026, Elapsed time: 0:00:01
+Errors: 0, Warnings: 2

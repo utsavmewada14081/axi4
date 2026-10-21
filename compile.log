@@ -1,0 +1,7 @@
+QuestaSim-64 vlog 2024.1 Compiler 2024.02 Feb  1 2024
+Start time: 20:07:01 on Oct 05,2026
+vlog -reportprogress 300 -sv -mfcu ../tb/axi_tb_top.sv -l compile.log 
+** Error: (vlog-7) Failed to open design unit file "../tb/axi_tb_top.sv" in read mode.
+No such file or directory. (errno = ENOENT)
+End time: 20:07:01 on Oct 05,2026, Elapsed time: 0:00:00
+Errors: 1, Warnings: 0

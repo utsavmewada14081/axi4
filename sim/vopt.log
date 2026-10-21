@@ -1,0 +1,24 @@
+QuestaSim-64 vopt 2024.1 Compiler 2024.02 Feb  1 2024
+** Warning: (vopt-10587) Some optimizations are turned off because the +acc switch is in effect. This will cause your simulation to run slowly. Please use -access/-debug to maintain needed visibility.
+Start time: 14:32:36 on Oct 21,2026
+vopt -reportprogress 300 axi_tb_top_no_dut -o axi_top_opt "+acc" -l vopt.log 
+
+Top level modules:
+	axi_tb_top_no_dut
+
+Analyzing design...
+-- Loading module axi_tb_top_no_dut
+-- Loading package mtiUvm.questa_uvm_pkg
+-- Loading interface axi_if
+Incremental compilation check found 2 design-units (out of 7) may be reused.
+Optimizing 5 design-units (inlining 0/2 module instances):
+-- Optimizing package axi_pkg(fast)
+** Warning: ../tb/transaction.sv(164): (vopt-2570) Zero-length range with constant bounds. Low-bound and high-bound may be reversed.
+** Warning: ../tb/transaction.sv(151): (vopt-2570) Zero-length range with constant bounds. Low-bound and high-bound may be reversed.
+-- Optimizing package axi_tb_top_sv_unit(fast)
+-- Optimizing interface axi_if(fast__2)
+-- Optimizing module axi_tb_top_no_dut(fast)
+-- Optimizing interface axi_if(fast)
+Optimized design name is axi_top_opt
+End time: 14:32:39 on Oct 21,2026, Elapsed time: 0:00:03
+Errors: 0, Warnings: 3

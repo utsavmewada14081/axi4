@@ -1,165 +1,151 @@
-class axi4_lite_monitor extends uvm_monitor;
-`uvm_component_utils(axi4_lite_monitor)
+class axi_monitor extends uvm_monitor;
+`uvm_component_utils(axi_monitor)
 virtual axi_if vif;
-uvm_analysis_port #(axi4_lite_transaction) mon_analysis_port;
+axi_config cfg;
 
-covergroup axi4_lite_cg;
-option.per_instance = 1;
-option.name = "axi4_lite_cg";
-resetn: coverpoint vif.resetn {
-    bins resetn_0 = {0};
-    bins resetn_1 = {1};
-}
-awvalid: coverpoint vif.awvalid {
-    bins awvalid_0 = {0};
-    bins awvalid_1 = {1};
-}
-awready: coverpoint vif.awready {
-    bins awready_0 = {0};
-    bins awready_1 = {1};
-}
-arvalid: coverpoint vif.arvalid {
-    bins arvalid_0 = {0};
-    bins arvalid_1 = {1};
-}
-arready: coverpoint vif.arready {
-    bins arready_0 = {0};
-    bins arready_1 = {1};
-}
-wvalid: coverpoint vif.wvalid {
-    bins wvalid_0 = {0};
-    bins wvalid_1 = {1};
-}
-wready: coverpoint vif.wready {
-    bins wready_0 = {0};
-    bins wready_1 = {1};
-}
-bvalid: coverpoint vif.bvalid {
-    bins bvalid_0 = {0};
-    bins bvalid_1 = {1};
-}
-bready: coverpoint vif.bready {
-    bins bready_0 = {0};
-    bins bready_1 = {1};
-}
-rvalid: coverpoint vif.rvalid {
-    bins rvalid_0 = {0};
-    bins rvalid_1 = {1};
-}
-rready: coverpoint vif.rready {
-    bins rready_0 = {0};
-    bins rready_1 = {1};
-}
-awaddr: coverpoint vif.awaddr {
-    
-    // 1. Extreme Boundaries
-    bins addr_zero = {0};
-    bins addr_max  = {127};
+uvm_analysis_port #(axi_transaction) wr_ap;
+uvm_analysis_port #(axi_transaction) rd_ap;
 
-    bins addr_low  = {[1:43]};
-    bins addr_mid  = {[44:85]};
-    bins addr_high = {[86:127]};
-  }
-araddr: coverpoint vif.araddr {
-    
-    // 1. Extreme Boundaries
-    bins addr_zero = {0};
-    bins addr_max  = {127};
-
-    bins addr_low  = {[1:43]};
-    bins addr_mid  = {[44:85]};
-    bins addr_high = {[86:127]};
-  }
-wdata: coverpoint vif.wdata {
-    
-    // 1. Extreme Corner Cases (Stuck-at fault detection)
-    bins all_zeros = {32'h0000_0000};
-    bins all_ones  = {32'hFFFF_FFFF};
-    
-    // 2. Cross-coupling & Toggle Stress Patterns
-    bins alt_a = {32'hAAAA_AAAA}; // 1010...
-    bins alt_5 = {32'h5555_5555}; // 0101...
-    
-    // 3. Byte/Half-word Boundaries (Common logic truncation points)
-    bins low_byte_max  = {32'h0000_00FF};
-    bins high_byte_max = {32'hFF00_0000};
-    bins half_word_max = {32'h0000_FFFF};
-    
-    // 4. Broad Ranges (Ensures datapath sees a spread of magnitudes)
-    // Using 4 bins for the middle ranges keeps memory overhead low
-    bins small_vals = {[32'h0000_0100 : 32'h0000_FFFE]};
-    bins mid_vals[4]= {[32'h0001_0000 : 32'hFFFE_FFFF]}; 
-    bins large_vals = {[32'hFFFF_0000 : 32'hFFFF_FFFE]};
-    
-    // 5. Critical Transitions (Datapath switching/timing stress)
-    bins toggle_0_to_1 = (32'h0000_0000 => 32'hFFFF_FFFF);
-    bins toggle_1_to_0 = (32'hFFFF_FFFF => 32'h0000_0000);
-    bins toggle_a_to_5 = (32'hAAAA_AAAA => 32'h5555_5555);
-    
-    // 6. Catch-all for anything outside defined bins (Optional but good practice)
-    bins others = default;
-  }
-rdata: coverpoint vif.rdata {
-    
-    // 1. Extreme Corner Cases (Stuck-at fault detection)
-    bins all_zeros = {32'h0000_0000};
-    bins all_ones  = {32'hFFFF_FFFF};
-    
-    // 2. Cross-coupling & Toggle Stress Patterns
-    bins alt_a = {32'hAAAA_AAAA}; // 1010...
-    bins alt_5 = {32'h5555_5555}; // 0101...
-    
-    // 3. Byte/Half-word Boundaries (Common logic truncation points)
-    bins low_byte_max  = {32'h0000_00FF};
-    bins high_byte_max = {32'hFF00_0000};
-    bins half_word_max = {32'h0000_FFFF};
-    
-    // 4. Broad Ranges (Ensures datapath sees a spread of magnitudes)
-    // Using 4 bins for the middle ranges keeps memory overhead low
-    bins small_vals = {[32'h0000_0100 : 32'h0000_FFFE]};
-    bins mid_vals[4]= {[32'h0001_0000 : 32'hFFFE_FFFF]}; 
-    bins large_vals = {[32'hFFFF_0000 : 32'hFFFF_FFFE]};
-    
-    // 5. Critical Transitions (Datapath switching/timing stress)
-    bins toggle_0_to_1 = (32'h0000_0000 => 32'hFFFF_FFFF);
-    bins toggle_1_to_0 = (32'hFFFF_FFFF => 32'h0000_0000);
-    bins toggle_a_to_5 = (32'hAAAA_AAAA => 32'h5555_5555);
-    
-    // 6. Catch-all for anything outside defined bins (Optional but good practice)
-    bins others = default;
-  }
-wresp: coverpoint vif.wresp {
-    bins wresp_0 = {0};
-    bins wresp_3 = {3};
-}
-rresp: coverpoint vif.rresp {
-    bins rresp_0 = {0};
-    bins rresp_3 = {3};
-}
-
-endgroup
-
+bit valid_drop_seen;
 
 function new(string name, uvm_component parent);
 super.new(name, parent);
-axi4_lite_cg = new();
+wr_ap = new("wr_ap", this);
+rd_ap = new("rd_ap", this);
 endfunction
 
 virtual function void build_phase(uvm_phase phase);
 super.build_phase(phase);
-mon_analysis_port = new("mon_analysis_port", this);
-if(!uvm_config_db #(virtual axi_if)::get(this, "", "vif", vif)) begin
-    `uvm_error(get_type_name(), "Didn't get handle to virtual interface axi_if")
-end
-
+if (!uvm_config_db#(axi_config)::get(this, "", "cfg", cfg))
+    `uvm_fatal("MON", "axi_config not set")
+vif = cfg.vif;
 endfunction
 
-virtual task run_phase(uvm_phase phase);
+task watch_valid_drop();
+    bit prev_valid = 0;
+    bit prev_ready = 0;
+    forever begin
+        @(vif.mon_cb);
+        if (prev_valid && !prev_ready && !vif.mon_cb.wvalid)
+            valid_drop_seen = 1;
+            `uvm_info("MON", "WVALID drop observed", UVM_LOW)
+        prev_valid = vif.mon_cb.wvalid;
+        prev_ready = vif.mon_cb.wready;
+    end
+endtask
 
+task monitor_write_channel();
+
+forever begin
+    axi_transaction wr_tr;
+    axi4_violation_e data_v, pin_v;
+    int beat_count;
+    wr_tr = axi_transaction::type_id::create("wr_tr");
+    do begin
+        @(posedge vif.clk);
+    end
+    while (!(vif.mon_cb.awvalid && vif.mon_cb.awready));
+
+    wr_tr.dir   = AXI4_WRITE;
+    wr_tr.addr = vif.mon_cb.awaddr;
+    wr_tr.len = vif.mon_cb.awlen;
+    wr_tr.size  = vif.mon_cb.awsize;
+    wr_tr.burst = axi4_burst_e'(vif.mon_cb.awburst);
+    wr_tr.wdata = new[vif.mon_cb.awlen + 1];
+    wr_tr.wstrb = new[vif.mon_cb.awlen + 1];
+    beat_count = 0;
+
+    data_v = wr_tr.classify();
+    pin_v = VIOL_NONE;
+
+    for (int i = 0; i <= wr_tr.len; i++) begin
+        do begin
+            @(posedge vif.clk);
+        end
+        while(!(vif.mon_cb.wvalid && vif.mon_cb.wready));
+
+        wr_tr.wdata[beat_count] = vif.mon_cb.wdata;
+        wr_tr.wstrb[beat_count] = vif.mon_cb.wstrb;
+
+        if (i != wr_tr.len && vif.mon_cb.wlast) begin
+            `uvm_error("MON", "WLAST asserted before final beat")
+            if (wr_tr.inject_violation == VIOL_NONE)
+                pin_v = VIOL_WLAST_EARLY;
+        end
+        if (i == wr_tr.len && !vif.mon_cb.wlast) begin
+            `uvm_error("MON", "WLAST not asserted on final beat")
+            if (wr_tr.inject_violation == VIOL_NONE)
+                pin_v = VIOL_WLAST_EARLY;
+        end
+    end
+    if (valid_drop_seen) begin
+        if (pin_v == VIOL_NONE) pin_v = VIOL_VALID_DROP;
+        valid_drop_seen = 0;
+    end
+    if (data_v != VIOL_NONE && pin_v != VIOL_NONE) `uvm_warning("MON", $sformatf("two violations on one burst: %s (fields) + %s (pins)",data_v.name(), pin_v.name()))
+    wr_tr.inject_violation = (data_v != VIOL_NONE) ? data_v : pin_v;
+
+    do begin
+        @(posedge vif.clk);
+    end
+    while(!(vif.mon_cb.bvalid && vif.mon_cb.bready));
+    wr_tr.resp = vif.mon_cb.bresp;
+
+    `uvm_info(get_type_name(), $sformatf("[MON]: Write Tx -> AWADDR: %0h, WDATA: %0p, BRESP: %0b, VIOLATION: %0s, PIN_VIOLATION: %0s", 
+                wr_tr.addr, wr_tr.wdata, wr_tr.resp, wr_tr.inject_violation, pin_v), UVM_MEDIUM);
+    wr_ap.write(wr_tr);
+end
+endtask
+
+task monitor_read_channel();
+axi_transaction rd_tr;
+int beat_count;
+
+forever begin
+    rd_tr = axi_transaction::type_id::create("rd_tr");
+    do begin
+        @(posedge vif.clk);
+    end while(!(vif.mon_cb.arvalid && vif.mon_cb.arready));
+
+    rd_tr.dir   = AXI4_READ;
+    rd_tr.addr = vif.mon_cb.araddr;
+    rd_tr.len = vif.mon_cb.arlen;
+    rd_tr.size = vif.mon_cb.arsize;
+    rd_tr.burst = axi4_burst_e'(vif.mon_cb.arburst);
+
+    rd_tr.rdata = new[vif.mon_cb.arlen + 1];
+    rd_tr.inject_violation = rd_tr.classify();
+    beat_count = 0;
+
+    for (int i = 0; i <= rd_tr.len; i++) begin
+    do begin
+        @(posedge vif.clk);
+    end while(!(vif.mon_cb.rvalid && vif.mon_cb.rready));
+
+    rd_tr.rdata[beat_count] = vif.mon_cb.rdata;
+    rd_tr.resp = vif.mon_cb.rresp;
+
+    if (i == rd_tr.len && !vif.mon_cb.rlast)
+        `uvm_error("MON", "RLAST not asserted on final beat")
+    if (i != rd_tr.len && vif.mon_cb.rlast)
+        `uvm_error("MON", "RLAST asserted early")
+    beat_count++;
+    end
+
+    `uvm_info(get_type_name(), $sformatf("[MON]: Read Tx -> ARADDR: %0h, RDATA: %0p, RRESP: %0b, VIOLATION: %0s", 
+                rd_tr.addr, rd_tr.rdata, rd_tr.resp, rd_tr.inject_violation), UVM_MEDIUM);
+    rd_ap.write(rd_tr);
+end
+endtask
+
+
+virtual task run_phase(uvm_phase phase);
+@(posedge vif.rst_n);
+@(vif.mon_cb);
 fork
     //Monitor Write Transactions
-    forever begin
-        axi4_lite_transaction wr_tr = axi4_lite_transaction::type_id::create("wr_tr", this);
+    /*forever begin
+        axi_transaction wr_tr = axi_transaction::type_id::create("wr_tr", this);
         // 1. Wait for synchronous AW handshake
       do begin @(posedge vif.clk); end while (!(vif.awvalid && vif.awready));
       wr_tr.op = 1'b1;
@@ -171,14 +157,14 @@ fork
       
       // 3. Wait for synchronous B (Response) handshake
       do begin @(posedge vif.clk); end while (!(vif.bvalid && vif.bready));
-      wr_tr.wresp = vif.wresp; // Note: AXI standard uses BRESP, not WRESP
+      wr_tr.bresp = vif.bresp; // Note: AXI standard uses BRESP, not bresp
       
       `uvm_info(get_type_name(), $sformatf("[MON]: Write Tx -> AWADDR: %0h, WDATA: %0h, BRESP: %0b", 
-                wr_tr.awaddr, wr_tr.wdata, wr_tr.wresp), UVM_MEDIUM);
+                wr_tr.awaddr, wr_tr.wdata, wr_tr.bresp), UVM_MEDIUM);
         mon_analysis_port.write(wr_tr);
     end
     forever begin
-        axi4_lite_transaction rd_tr = axi4_lite_transaction::type_id::create("rd_tr", this);
+        axi_transaction rd_tr = axi_transaction::type_id::create("rd_tr", this);
         // 1. Wait for synchronous AR handshake
       do begin @(posedge vif.clk); end while (!(vif.arvalid && vif.arready));
       rd_tr.op = 1'b0;
@@ -192,11 +178,11 @@ fork
       `uvm_info(get_type_name(), $sformatf("[MON]: Read Tx -> ARADDR: %0h, RDATA: %0h, RRESP: %0b", 
                 rd_tr.araddr, rd_tr.rdata, rd_tr.rresp), UVM_MEDIUM);
         mon_analysis_port.write(rd_tr);
-    end
-    forever begin
-        @(posedge vif.clk);
-        axi4_lite_cg.sample();
-    end
+    end*/
+
+    monitor_read_channel();
+    monitor_write_channel();
+    watch_valid_drop();
 join
 
 
